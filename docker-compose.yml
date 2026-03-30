@@ -28,5 +28,18 @@ services:
       postgres:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: .
+      dockerfile: dockers/Dockerfile.frontend
+      args:
+        # NEXT_PUBLIC_API_URL is baked into the JS bundle at build time.
+        # The browser contacts the backend directly on localhost:8000.
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:

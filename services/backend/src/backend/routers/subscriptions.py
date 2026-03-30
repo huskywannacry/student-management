@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
@@ -7,6 +9,17 @@ from backend.models.subscription import Subscription
 from backend.schemas.subscription import SubscriptionCreate, SubscriptionResponse
 
 router = APIRouter(prefix="/api/subscriptions", tags=["subscriptions"])
+
+
+@router.get("", response_model=list[SubscriptionResponse])
+def list_subscriptions(
+    student_id: Optional[int] = Query(None, description="Filter by student id"),
+    db: Session = Depends(get_db),
+):
+    q = db.query(Subscription)
+    if student_id is not None:
+        q = q.filter(Subscription.student_id == student_id)
+    return q.order_by(Subscription.end_date.desc()).all()
 
 
 @router.post("", response_model=SubscriptionResponse, status_code=status.HTTP_201_CREATED)
